@@ -1,0 +1,31 @@
+{
+  "building":"Bloque C",
+  "floor": 1,
+  "image": "assets/plans/bloque_c_planta1.png",
+  "classrooms": [
+    {
+      "name": "C101",
+      "x": 0.17,
+      "y": 0.21,
+      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+    },
+    {
+      "name": "C102",
+      "x": 0.30,
+      "y": 0.21,
+      "directions": "Suba por la escalera y avance por el pasillo derecho."
+    },
+    {
+      "name": "C103",
+      "x": 0.17,
+      "y": 0.63,
+      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+    },
+    {
+      "name": "C104",
+      "x": 0.30,
+      "y": 0.63,
+      "directions": "Suba por la escalera y avance por el pasillo derecho."
+    }
+  ]
+}
