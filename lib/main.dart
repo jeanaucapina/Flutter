@@ -2,16 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import '../data/campus_data.dart';
 import '../models/block.dart';
 import '../screens/floor_plan_screen.dart';
-//para busqueda
 import '../services/classroom_index_service.dart';
 import '../models/search_classroom.dart';
 import '../search/classroom_search.dart';
+import '../services/theme_provider.dart';
+import '../widgets/animated_routes.dart';
+import '../services/route_handler.dart';
+import '../widgets/distance_info_widget.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -19,9 +28,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MapScreen(),
-      debugShowCheckedModeBanner: false,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          home: const MapScreen(),
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.lightTheme,
+          darkTheme: themeProvider.darkTheme,
+          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+        );
+      },
     );
   }
 }
@@ -155,21 +171,61 @@ class _MapScreenState extends State<MapScreen> {
     appBar: AppBar(
       title: const Text("Campus Map"),
       actions: [
+        // 🔍 Búsqueda
         IconButton(
           icon: const Icon(Icons.search),
+          tooltip: 'Buscar aula',
           onPressed: () async {
-            
             final result = await showSearch(
               context: context,
               delegate: ClassroomSearch(classroomIndex),
             );
-
             if (result != null) {
               _handleClassroomSelection(result);
             }
-
-
           },
+        ),
+        // 🌙 Tema
+        Consumer<ThemeProvider>(
+          builder: (context, themeProvider, _) {
+            return IconButton(
+              icon: Icon(
+                themeProvider.isDarkMode 
+                  ? Icons.light_mode 
+                  : Icons.dark_mode,
+              ),
+              tooltip: 'Cambiar tema',
+              onPressed: themeProvider.toggleTheme,
+            );
+          },
+        ),
+        // ♿ Accesibilidad
+        PopupMenuButton(
+          tooltip: 'Opciones de accesibilidad',
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              child: const Text('Aumentar texto'),
+              onTap: () {
+                Provider.of<ThemeProvider>(context, listen: false)
+                    .setTextScale(1.2);
+              },
+            ),
+            PopupMenuItem(
+              child: const Text('Texto normal'),
+              onTap: () {
+                Provider.of<ThemeProvider>(context, listen: false)
+                    .setTextScale(1.0);
+              },
+            ),
+            PopupMenuItem(
+              child: const Text('Texto pequeño'),
+              onTap: () {
+                Provider.of<ThemeProvider>(context, listen: false)
+                    .setTextScale(0.8);
+              },
+            ),
+          ],
+          child: const Icon(Icons.accessibility),
         ),
       ],
     ),
@@ -200,9 +256,8 @@ class _MapScreenState extends State<MapScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            BlockDetailScreen(block: block),
+                      ScalePageRoute(
+                        child: BlockDetailScreen(block: block),
                       ),
                     );
                   },
@@ -252,49 +307,63 @@ class _MapScreenState extends State<MapScreen> {
       ],
     ),
 
-    //  BOTÓNES
-    floatingActionButton: Column(
-  mainAxisSize: MainAxisSize.min,
-  children: [
+    //  INFORMACIÓN DE RUTA Y BOTÓNES
+    floatingActionButton: Stack(
+      children: [
+        // Información de distancia cuando hay destino
+        if (selectedClassroom != null && userLocation != null)
+          Positioned(
+            left: 16,
+            bottom: 180,
+            right: 16,
+            child: DistanceInfoWidget(
+              currentLocation: userLocation!,
+              destination: destination!,
+              destinationName: selectedClassroom!.name,
+            ),
+          ),
+        // Botones de acción
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // BOTÓN IR AL AULA
+            if (selectedClassroom != null)
+              FloatingActionButton.extended(
+                heroTag: "goToClassroom",
+                icon: const Icon(Icons.meeting_room),
+                label: Text("Ir a ${selectedClassroom!.name}"),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    ScalePageRoute(
+                      child: FloorPlanScreen(
+                        jsonPath:
+                            "assets/data/${selectedClassroom!.building.toLowerCase().replaceAll(" ", "_")}_planta${selectedClassroom!.floor}.json",
+                        highlightClassroom: selectedClassroom!.name,
+                      ),
+                    ),
+                  );
+                },
+              ),
 
-    // BOTÓN IR AL AULA
-    if (selectedClassroom != null)
-      FloatingActionButton.extended(
-        heroTag: "goToClassroom",
-        icon: const Icon(Icons.meeting_room),
-        label: Text("Ir a ${selectedClassroom!.name}"),
-        onPressed: () {
+            const SizedBox(height: 10),
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => FloorPlanScreen(
-                jsonPath:
-                    "assets/data/${selectedClassroom!.building.toLowerCase().replaceAll(" ", "_")}_planta${selectedClassroom!.floor}.json",
-                highlightClassroom: selectedClassroom!.name,
+            // BOTÓN SEGUIR USUARIO
+            FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _followUser = !_followUser;
+                });
+              },
+              tooltip: _followUser ? 'Dejar de seguir' : 'Seguir ubicación',
+              child: Icon(
+                _followUser ? Icons.gps_fixed : Icons.gps_not_fixed,
               ),
             ),
-          );
-
-        },
-      ),
-
-    const SizedBox(height: 10),
-
-    // BOTÓN SEGUIR USUARIO (EL ORIGINAL)
-    FloatingActionButton(
-      onPressed: () {
-        setState(() {
-          _followUser = !_followUser;
-        });
-      },
-      child: Icon(
-        _followUser ? Icons.gps_fixed : Icons.gps_not_fixed,
-      ),
+          ],
+        ),
+      ],
     ),
-
-  ],
-),
     
 
     
