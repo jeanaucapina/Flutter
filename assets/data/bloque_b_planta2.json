@@ -1,0 +1,31 @@
+{
+  "building":"Bloque B",
+  "floor": 2,
+  "image": "assets/plans/bloque_b_planta2.png",
+  "classrooms": [
+    {
+      "name": "B201",
+      "x": 0.17,
+      "y": 0.21,
+      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+    },
+    {
+      "name": "B202",
+      "x": 0.30,
+      "y": 0.21,
+      "directions": "Suba por la escalera y avance por el pasillo derecho."
+    },
+    {
+      "name": "B204",
+      "x": 0.17,
+      "y": 0.63,
+      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+    },
+    {
+      "name": "B205",
+      "x": 0.30,
+      "y": 0.63,
+      "directions": "Suba por la escalera y avance por el pasillo derecho."
+    }
+  ]
+}
