@@ -71,6 +71,11 @@ class _MapScreenState extends State<MapScreen> {
     // Verifica si el GPS está activado
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Activa los servicios de ubicación en tu dispositivo.')),
+        );
+      });
       return;
     }
 
@@ -79,11 +84,21 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Permiso de ubicación denegado. Actívalo en la configuración.')),
+          );
+        });
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permiso de ubicación denegado permanentemente. Ve a configuración para activarlo.')),
+        );
+      });
       return;
     }
     //FIN COMPROBACION DE PERMISOS
