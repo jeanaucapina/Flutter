@@ -2,6 +2,10 @@
   "building":"Bloque B",
   "floor": 2,
   "image": "assets/plans/bloque_b_planta2.png",
+  "entrance": {
+    "x": 0.9,
+    "y": 0.5
+  },
   "classrooms": [
     {
       "name": "B201",

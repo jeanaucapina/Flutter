@@ -10,6 +10,7 @@ location on the map when accessed from a mobile browser or device.
 - 🗺️ Interactive map with building markers and floor plans
 - 🔍 Classroom search with deep linking to floor views
 - 📍 Geolocation tracking using the device's GPS (HTTPS required on web)
+- 🧭 Status indicator for location permissions & GPS state, positioned above the follow-location button
 - 🛣️ Route calculation with distance and bearing display
 - 🌙 Dark mode toggle for comfortable viewing in any lighting
 - ♿ Accessibility features (adjustable text size: 80%, 100%, 120%)

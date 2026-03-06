@@ -2,6 +2,10 @@
   "building":"Bloque C",
   "floor": 1,
   "image": "assets/plans/bloque_c_planta1.png",
+  "entrance": {
+    "x": 0.9,
+    "y": 0.5
+  },
   "classrooms": [
     {
       "name": "C101",

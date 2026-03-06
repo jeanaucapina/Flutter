@@ -6,12 +6,14 @@ class FloorData {
   final String building;
   final int floor;
   final String image;
+  final Offset entrance;
   final List<Classroom> classrooms;
 
   FloorData({
     required this.building,
     required this.floor,
     required this.image,
+    required this.entrance,
     required this.classrooms,
   });
 }
@@ -27,10 +29,17 @@ Future<FloorData> loadFloor(String path) async {
   List<Classroom> classrooms =
       classroomsJson.map((c) => Classroom.fromJson(c)).toList();
 
+  final entranceData = data["entrance"];
+  final entrance = Offset(
+    (entranceData["x"] as num).toDouble(),
+    (entranceData["y"] as num).toDouble(),
+  );
+
   return FloorData(
     building: data["building"],
     floor: data["floor"],
     image: data["image"],
+    entrance: entrance,
     classrooms: classrooms,
   );
 }

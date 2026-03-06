@@ -11,7 +11,6 @@ import '../models/search_classroom.dart';
 import '../search/classroom_search.dart';
 import '../services/theme_provider.dart';
 import '../widgets/animated_routes.dart';
-import '../services/route_handler.dart';
 import '../widgets/distance_info_widget.dart';
 
 void main() {
@@ -55,6 +54,10 @@ class _MapScreenState extends State<MapScreen> {
   LatLng? destination;
   SearchClassroom? selectedClassroom;
  
+  String _locationStatus = 'Iniciando ubicación...';
+  bool _locationAvailable = false;
+  bool _isRequestingLocation = false;
+
   List<SearchClassroom> classroomIndex = [];
 
   final MapController _mapController = MapController();
@@ -66,7 +69,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-     _startLocationTracking();
+    _startLocationTracking();
 
     //para busqueda
 
@@ -79,18 +82,21 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _startLocationTracking() async {
-    bool serviceEnabled;
-     
+    setState(() {
+      _isRequestingLocation = true;
+      _locationStatus = 'Solicitando permisos de ubicación...';
+    });
 
+    bool serviceEnabled;
     LocationPermission permission;
 
     // Verifica si el GPS está activado
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Activa los servicios de ubicación en tu dispositivo.')),
-        );
+      setState(() {
+        _locationAvailable = false;
+        _locationStatus = 'Activa los servicios de ubicación.';
+        _isRequestingLocation = false;
       });
       return;
     }
@@ -100,55 +106,58 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Permiso de ubicación denegado. Actívalo en la configuración.')),
-          );
+        setState(() {
+          _locationAvailable = false;
+          _locationStatus = 'Permiso de ubicación denegado.';
+          _isRequestingLocation = false;
         });
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permiso de ubicación denegado permanentemente. Ve a configuración para activarlo.')),
-        );
+      setState(() {
+        _locationAvailable = false;
+        _locationStatus = 'Permiso denegado permanentemente.';
+        _isRequestingLocation = false;
       });
       return;
     }
-    //FIN COMPROBACION DE PERMISOS
 
-        const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 5, // actualiza cada 5 metros
-      );
+    // Permisos OK
+    setState(() {
+      _locationAvailable = true;
+      _locationStatus = 'Ubicación activa';
+      _isRequestingLocation = false;
+    });
 
-      _positionStream =
-          Geolocator.getPositionStream(locationSettings: locationSettings);
+    const LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5, // actualiza cada 5 metros
+    );
 
-      _positionStream!.listen((Position position) {
-          final LatLng newLocation =
-              LatLng(position.latitude, position.longitude);
+    _positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings);
 
-          setState(() {
-            userLocation = newLocation;
-          });
-          // Centrar automáticamente solo la primera vez
-            if (!_hasCentered) {
-              _mapController.move(newLocation, 18);
-              _hasCentered = true;
-            }
+    _positionStream!.listen((Position position) {
+      final LatLng newLocation = LatLng(position.latitude, position.longitude);
 
-            // Seguir usuario si está activado
-            if (_followUser) {
-              _mapController.move(newLocation, _mapController.camera.zoom);
-            }
-          });
-    // Aquí centramos el mapa dinámicamente
-    //_mapController.move(newLocation, 18);
+      setState(() {
+        userLocation = newLocation;
+        _locationStatus = 'Ubicación actualizada';
+      });
 
+      // Centrar automáticamente solo la primera vez
+      if (!_hasCentered) {
+        _mapController.move(newLocation, 18);
+        _hasCentered = true;
+      }
 
+      // Seguir usuario si está activado
+      if (_followUser) {
+        _mapController.move(newLocation, _mapController.camera.zoom);
+      }
+    });
   }
 
   void _handleClassroomSelection(SearchClassroom classroom) {
@@ -230,80 +239,145 @@ class _MapScreenState extends State<MapScreen> {
       ],
     ),
 
-    body: FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: const LatLng(-2.891600, -79.037200),
-        initialZoom: 17,
-      ),
-
+    body: Stack(
       children: [
-        TileLayer(
-          urlTemplate:
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.campus_map_app',
-        ),
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: const LatLng(-2.891600, -79.037200),
+            initialZoom: 17,
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.campus_map_app',
+            ),
 
-        MarkerLayer(
-          markers: [
-            // 🔵 BLOQUES
-            ...campusBlocks.map((block) {
-              return Marker(
-                point: block.location,
-                width: 50,
-                height: 50,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      ScalePageRoute(
-                        child: BlockDetailScreen(block: block),
+            MarkerLayer(
+              markers: [
+                // 🔵 BLOQUES
+                ...campusBlocks.map((block) {
+                  return Marker(
+                    point: block.location,
+                    width: 50,
+                    height: 50,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          ScalePageRoute(
+                            child: BlockDetailScreen(block: block),
+                          ),
+                        );
+                      },
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.blue,
+                        size: 32,
                       ),
-                    );
-                  },
-                  child: const Icon(
-                    Icons.apartment,
-                    size: 40,
-                    color: Colors.blue,
+                    ),
+                  );
+                }).toList(),
+
+                // 🔴 USUARIO
+                if (userLocation != null)
+                  Marker(
+                    point: userLocation!,
+                    width: 40,
+                    height: 40,
+                    child: const Icon(
+                      Icons.my_location,
+                      color: Colors.green,
+                      size: 30,
+                    ),
                   ),
-                ),
-              );
-            }),
 
-            // 🔴 USUARIO
-            if (userLocation != null)
-              Marker(
-                point: userLocation!,
-                width: 40,
-                height: 40,
-                child: const Icon(
-                  Icons.my_location,
-                  size: 40,
-                  color: Colors.red,
-                ),
-              ),
-          ],
-          
-          
-
-
-        ),
-
-
-
-        if (userLocation != null && destination != null)
-            PolylineLayer(
-              polylines: [
-                Polyline(
-                  points: [
-                    userLocation!,
-                    destination!,
-                  ],
-                  strokeWidth: 4,
-                  color: Colors.blue,
-                ),
+                // 🟠 DESTINO (clase elegida)
+                if (destination != null)
+                  Marker(
+                    point: destination!,
+                    width: 40,
+                    height: 40,
+                    child: const Icon(
+                      Icons.flag,
+                      color: Colors.orange,
+                      size: 30,
+                    ),
+                  ),
               ],
             ),
+
+            if (userLocation != null && destination != null)
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: [
+                      userLocation!,
+                      destination!,
+                    ],
+                    strokeWidth: 4,
+                    color: Colors.blue,
+                  ),
+                ],
+              ),
+          ],
+        ),
+
+        // Indicador de estado de ubicación
+        // Se posiciona más arriba para no superponerse al botón "Seguir ubicación"
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: 92,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 250),
+            opacity: _locationStatus.isEmpty ? 0 : 1,
+            child: Card(
+              color: _locationAvailable ? Colors.green[800] : Colors.red[700],
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isRequestingLocation)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                        ),
+                      )
+                    else
+                      Icon(
+                        _locationAvailable ? Icons.gps_fixed : Icons.gps_off,
+                        color: Colors.white,
+                      ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _locationStatus,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    if (!_locationAvailable)
+                      TextButton(
+                        onPressed: _startLocationTracking,
+                        child: const Text(
+                          'Reintentar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     ),
 
