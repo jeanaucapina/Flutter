@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../models/search_classroom.dart';
+import '../services/classroom_index_service.dart';
 import '../services/schedule_service.dart';
 import 'tasks_screen.dart';
 
@@ -12,6 +14,7 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   List<ScheduleItem> _items = [];
+  List<SearchClassroom> _classroomOptions = [];
   bool _loading = true;
   DateTime _now = DateTime.now();
   Timer? _clockTimer;
@@ -52,10 +55,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Future<void> _load() async {
-    final loaded = await ScheduleService.loadSchedule();
+    final results = await Future.wait([
+      ScheduleService.loadSchedule(),
+      ClassroomIndexService.loadIndex(),
+    ]);
+
+    final loaded = results[0] as List<ScheduleItem>;
+    final loadedClassrooms = results[1] as List<SearchClassroom>;
+    loadedClassrooms.sort((a, b) {
+      final byBuilding = a.building.compareTo(b.building);
+      if (byBuilding != 0) return byBuilding;
+      final byFloor = a.floor.compareTo(b.floor);
+      if (byFloor != 0) return byFloor;
+      return a.name.compareTo(b.name);
+    });
+
     if (!mounted) return;
     setState(() {
       _items = loaded;
+      _classroomOptions = loadedClassrooms;
       _sortItems();
       _loading = false;
     });
@@ -78,7 +96,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final result = await showModalBottomSheet<ScheduleItem>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _ScheduleEditorSheet(initialItem: item),
+      builder: (_) => _ScheduleEditorSheet(
+        initialItem: item,
+        classroomOptions: _classroomOptions,
+      ),
     );
 
     if (result == null) return;
@@ -179,8 +200,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
 class _ScheduleEditorSheet extends StatefulWidget {
   final ScheduleItem? initialItem;
+  final List<SearchClassroom> classroomOptions;
 
-  const _ScheduleEditorSheet({this.initialItem});
+  const _ScheduleEditorSheet({
+    this.initialItem,
+    required this.classroomOptions,
+  });
 
   @override
   State<_ScheduleEditorSheet> createState() => _ScheduleEditorSheetState();
@@ -188,31 +213,67 @@ class _ScheduleEditorSheet extends StatefulWidget {
 
 class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
   late final TextEditingController _subjectCtrl;
-  late final TextEditingController _classroomCtrl;
-  late final TextEditingController _buildingCtrl;
-  late final TextEditingController _floorCtrl;
 
   late int _weekday;
   late TimeOfDay _time;
+  String? _selectedBuilding;
+  int? _selectedFloor;
+  String? _selectedClassroomId;
 
   @override
   void initState() {
     super.initState();
     final item = widget.initialItem;
     _subjectCtrl = TextEditingController(text: item?.subject ?? '');
-    _classroomCtrl = TextEditingController(text: item?.classroomName ?? '');
-    _buildingCtrl = TextEditingController(text: item?.building ?? '');
-    _floorCtrl = TextEditingController(text: item?.floor.toString() ?? '1');
     _weekday = item?.weekday ?? DateTime.monday;
     _time = item?.start ?? const TimeOfDay(hour: 8, minute: 0);
+
+    if (item != null) {
+      final initial = widget.classroomOptions.where((c) {
+        return c.name == item.classroomName &&
+            c.building == item.building &&
+            c.floor == item.floor;
+      });
+      _selectedClassroomId = initial.isEmpty ? null : initial.first.id;
+      _selectedBuilding = item.building;
+      _selectedFloor = item.floor;
+    }
+
+    _selectedBuilding ??= _availableBuildings.isNotEmpty ? _availableBuildings.first : null;
+    _selectedFloor ??= _availableFloorsFor(_selectedBuilding).isNotEmpty
+        ? _availableFloorsFor(_selectedBuilding).first
+        : null;
+  }
+
+  List<String> get _availableBuildings {
+    final set = widget.classroomOptions.map((c) => c.building).toSet().toList();
+    set.sort();
+    return set;
+  }
+
+  List<int> _availableFloorsFor(String? building) {
+    if (building == null) return <int>[];
+    final floors = widget.classroomOptions
+        .where((c) => c.building == building)
+        .map((c) => c.floor)
+        .toSet()
+        .toList();
+    floors.sort();
+    return floors;
+  }
+
+  List<SearchClassroom> _availableClassroomsFor(String? building, int? floor) {
+    if (building == null || floor == null) return <SearchClassroom>[];
+    final classrooms = widget.classroomOptions
+        .where((c) => c.building == building && c.floor == floor)
+        .toList();
+    classrooms.sort((a, b) => a.name.compareTo(b.name));
+    return classrooms;
   }
 
   @override
   void dispose() {
     _subjectCtrl.dispose();
-    _classroomCtrl.dispose();
-    _buildingCtrl.dispose();
-    _floorCtrl.dispose();
     super.dispose();
   }
 
@@ -229,11 +290,16 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
 
   void _save() {
     final subject = _subjectCtrl.text.trim();
-    final classroom = _classroomCtrl.text.trim();
-    final building = _buildingCtrl.text.trim();
-    final floor = int.tryParse(_floorCtrl.text.trim());
+    if (_selectedClassroomId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecciona bloque, planta y aula.')),
+      );
+      return;
+    }
 
-    if (subject.isEmpty || classroom.isEmpty || building.isEmpty || floor == null) {
+    final selected = widget.classroomOptions.where((c) => c.id == _selectedClassroomId).first;
+
+    if (subject.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Completa todos los campos correctamente.')),
       );
@@ -244,9 +310,9 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
       ScheduleItem(
         weekday: _weekday,
         start: _time,
-        classroomName: classroom,
-        building: building,
-        floor: floor,
+        classroomName: selected.name,
+        building: selected.building,
+        floor: selected.floor,
         subject: subject,
       ),
     );
@@ -305,18 +371,69 @@ class _ScheduleEditorSheetState extends State<_ScheduleEditorSheet> {
               controller: _subjectCtrl,
               decoration: const InputDecoration(labelText: 'Materia'),
             ),
-            TextField(
-              controller: _classroomCtrl,
-              decoration: const InputDecoration(labelText: 'Aula (ej: B101)'),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedBuilding,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Bloque',
+              ),
+              items: _availableBuildings.map((building) {
+                return DropdownMenuItem<String>(
+                  value: building,
+                  child: Text(
+                    building,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedBuilding = value;
+                  final floors = _availableFloorsFor(_selectedBuilding);
+                  _selectedFloor = floors.isNotEmpty ? floors.first : null;
+                  _selectedClassroomId = null;
+                });
+              },
             ),
-            TextField(
-              controller: _buildingCtrl,
-              decoration: const InputDecoration(labelText: 'Edificio (ej: Bloque B)'),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<int>(
+              initialValue: _selectedFloor,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Planta',
+              ),
+              items: _availableFloorsFor(_selectedBuilding).map((floor) {
+                return DropdownMenuItem<int>(
+                  value: floor,
+                  child: Text('Planta $floor'),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedFloor = value;
+                  _selectedClassroomId = null;
+                });
+              },
             ),
-            TextField(
-              controller: _floorCtrl,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Planta'),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedClassroomId,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Aula',
+              ),
+              items: _availableClassroomsFor(_selectedBuilding, _selectedFloor).map((option) {
+                return DropdownMenuItem<String>(
+                  value: option.id,
+                  child: Text(option.name),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedClassroomId = value;
+                });
+              },
             ),
             const SizedBox(height: 16),
             SizedBox(

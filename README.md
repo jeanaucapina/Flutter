@@ -9,6 +9,7 @@ location on the map when accessed from a mobile browser or device.
 
 - 🗺️ Interactive map with building markers and floor plans
 - 🔍 Classroom search with deep linking to floor views
+- 🗓️ Editable schedule with guided selection: Block -> Floor -> Classroom
 - 📍 Geolocation tracking using the device's GPS (HTTPS required on web)
 - 🧭 Status indicator for location permissions & GPS state, positioned above the follow-location button
 - 🛣️ Route calculation with distance and bearing display
@@ -17,6 +18,17 @@ location on the map when accessed from a mobile browser or device.
 - 📱 Progressive Web App (PWA) ready - installable on home screen
 - 🎨 Smooth page transitions and animations
 - 📊 Route instructions with cardinal directions and distance
+
+## Schedule Editing
+
+The schedule editor now uses dependent dropdowns to avoid input mistakes:
+
+- Select building first
+- Then select floor for that building
+- Then select classroom for that floor
+
+The manual text fields for classroom/building/floor were removed, so users no
+longer need to type the same information twice.
 
 ## Project Structure
 

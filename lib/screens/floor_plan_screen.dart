@@ -2,7 +2,7 @@ import 'package:campus_map_app/models/block.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/floor_loader.dart';
-import 'dart:math';
+import '../widgets/route_painter.dart';
 
 
 class FloorPlanScreen extends StatefulWidget {
@@ -275,95 +275,5 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         );
       },
     );
-  }
-}
-
-// CustomPainter para dibujar la línea de ruta con flecha
-class RoutePainter extends CustomPainter {
-  final Offset startPoint;
-  final Offset endPoint;
-
-  RoutePainter({
-    required this.startPoint,
-    required this.endPoint,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.green.withValues(alpha: 0.8)
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    // Dibujar línea principal
-    canvas.drawLine(startPoint, endPoint, paint);
-
-    // Dibujar círculo en el inicio (salida)
-    canvas.drawCircle(
-      startPoint,
-      6,
-      Paint()
-        ..color = Colors.green
-        ..style = PaintingStyle.fill,
-    );
-
-    // Dibujar flecha en el destino
-    _drawArrow(canvas, endPoint, startPoint, paint);
-
-    // Etiqueta "Ruta"
-    final textPainter = TextPainter(
-      text: const TextSpan(
-        text: '🛣️ Ruta',
-        style: TextStyle(
-          color: Colors.green,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    final midPoint = Offset(
-      (startPoint.dx + endPoint.dx) / 2,
-      (startPoint.dy + endPoint.dy) / 2,
-    );
-    textPainter.paint(canvas, midPoint - Offset(textPainter.width / 2, 0));
-  }
-
-  void _drawArrow(Canvas canvas, Offset endPoint, Offset startPoint, Paint paint) {
-    // Calcular ángulo de la línea
-    final angle = (endPoint - startPoint).direction;
-    final arrowSize = 20.0;
-
-    // Crear puntos de la punta de la flecha
-    final arrowPoint1 = Offset(
-      endPoint.dx - arrowSize * cos(angle - 0.4),
-      endPoint.dy - arrowSize * sin(angle - 0.4),
-    );
-
-    final arrowPoint2 = Offset(
-      endPoint.dx - arrowSize * cos(angle + 0.4),
-      endPoint.dy - arrowSize * sin(angle + 0.4),
-    );
-
-    // Dibujar triángulo de la flecha
-    final path = Path()
-      ..moveTo(endPoint.dx, endPoint.dy)
-      ..lineTo(arrowPoint1.dx, arrowPoint1.dy)
-      ..lineTo(arrowPoint2.dx, arrowPoint2.dy)
-      ..close();
-
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.green.withValues(alpha: 0.8)
-        ..style = PaintingStyle.fill,
-    );
-  }
-
-  @override
-  bool shouldRepaint(RoutePainter oldDelegate) {
-    return oldDelegate.startPoint != startPoint || oldDelegate.endPoint != endPoint;
   }
 }
