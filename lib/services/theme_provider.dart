@@ -25,7 +25,7 @@ class ThemeProvider extends ChangeNotifier {
       primaryColor: Colors.blue,
       scaffoldBackgroundColor: Colors.white,
       appBarTheme: AppBarTheme(
-        color: Colors.blue,
+        backgroundColor: Colors.blue,
         elevation: 2,
         titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,
@@ -56,7 +56,7 @@ class ThemeProvider extends ChangeNotifier {
       primaryColor: Colors.blue,
       scaffoldBackgroundColor: Color(0xFF121212),
       appBarTheme: AppBarTheme(
-        color: Color(0xFF1E1E1E),
+        backgroundColor: Color(0xFF1E1E1E),
         elevation: 2,
         titleTextStyle: GoogleFonts.poppins(
           fontSize: 20,

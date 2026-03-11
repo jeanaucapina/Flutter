@@ -26,11 +26,21 @@ class ClassroomIndexService {
       List classrooms = data["classrooms"];
 
       for (var classroom in classrooms) {
+        final String name = classroom["name"];
+        final List<dynamic> aliasData = classroom["aliases"] ?? const [];
+        final List<String> aliases = [
+          ...aliasData.map((e) => e.toString()),
+          '$name $building',
+          '$building $name',
+          '$name planta $floor',
+        ];
+
         index.add(
           SearchClassroom(
-            name: classroom["name"],
+            name: name,
             building: building,
             floor: floor,
+            aliases: aliases,
           ),
         );
       }

@@ -1,5 +1,6 @@
 import 'package:campus_map_app/models/block.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/floor_loader.dart';
 import 'dart:math';
 
@@ -26,15 +27,20 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   String? selectedClassroom;
   
   FloorData? floorData;
+  bool _hasPreviousFloor = false;
+  bool _hasNextFloor = false;
 
   @override
   void initState() {
     super.initState();
 
     loadFloor(widget.jsonPath).then((data) {
+      if (!mounted) return;
+
       setState(() {
         floorData = data;
       });
+      _refreshFloorNavigation(data.floor);
 
       if (widget.highlightClassroom != null) {
 
@@ -44,6 +50,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
         );
 
         Future.delayed(const Duration(milliseconds: 400), () {
+          if (!mounted) return;
           _showClassroomInfo(context, classroom);
         });
 
@@ -52,6 +59,51 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
 
     });
+  }
+
+  String? _floorPathFor(int floor) {
+    final match = RegExp(r'^(assets/data/.+_planta)\d+(.json)$').firstMatch(widget.jsonPath);
+    if (match == null) return null;
+    return '${match.group(1)}$floor${match.group(2)}';
+  }
+
+  Future<bool> _assetExists(String assetPath) async {
+    try {
+      await rootBundle.loadString(assetPath);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _refreshFloorNavigation(int currentFloor) async {
+    final previousPath = _floorPathFor(currentFloor - 1);
+    final nextPath = _floorPathFor(currentFloor + 1);
+
+    final hasPrevious = previousPath != null && await _assetExists(previousPath);
+    final hasNext = nextPath != null && await _assetExists(nextPath);
+
+    if (!mounted) return;
+    setState(() {
+      _hasPreviousFloor = hasPrevious;
+      _hasNextFloor = hasNext;
+    });
+  }
+
+  Future<void> _navigateToFloor(int floor) async {
+    final path = _floorPathFor(floor);
+    if (path == null) return;
+
+    if (!await _assetExists(path) || !mounted) return;
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => FloorPlanScreen(
+          jsonPath: path,
+          highlightClassroom: widget.highlightClassroom,
+        ),
+      ),
+    );
   }
 
   @override
@@ -66,6 +118,18 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("${floorData!.building} - Planta ${floorData!.floor}"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.keyboard_arrow_down),
+            tooltip: 'Bajar planta',
+            onPressed: _hasPreviousFloor ? () => _navigateToFloor(floorData!.floor - 1) : null,
+          ),
+          IconButton(
+            icon: const Icon(Icons.keyboard_arrow_up),
+            tooltip: 'Subir planta',
+            onPressed: _hasNextFloor ? () => _navigateToFloor(floorData!.floor + 1) : null,
+          ),
+        ],
       ),
         body: LayoutBuilder(
         builder: (context, constraints) {
@@ -130,7 +194,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                 // Classroom ejemplo
                 ...floorData!.classrooms.map((classroom) {
@@ -151,8 +215,8 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                         height: markerSize,
                         decoration: BoxDecoration(
                           color: (classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom)
-                              ? Colors.red.withOpacity(0.7)
-                              : Colors.blue.withOpacity(0.5),
+                              ? Colors.red.withValues(alpha: 0.7)
+                              : Colors.blue.withValues(alpha: 0.5),
                           border: Border.all(color: Colors.black),
                         ),
                         child: Padding(
@@ -174,7 +238,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           );
@@ -187,7 +251,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     );
   }
 
-  void _showClassroomInfo(BuildContext context, Classroom Classroom) {
+  void _showClassroomInfo(BuildContext context, Classroom classroom) {
     showModalBottomSheet(
       context: context,
       builder: (_) {
@@ -198,14 +262,14 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Aula ${Classroom.name}",
+                "Aula ${classroom.name}",
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              Text(Classroom.directions),
+              Text(classroom.directions),
             ],
           ),
         );
@@ -213,60 +277,6 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
     );
   }
 }
-
-final List<Classroom> aulasPlanta1 = [
-  Classroom(
-    name: "B101",
-    x: 0.17,
-    y: 0.21,
-    directions: "Desde la entrada principal avance recto y gire a la izquierda.",
-  ),
-  Classroom(
-    name: "B102",
-    x: 0.30,
-    y: 0.21,
-    directions: "Suba por la escalera y avance por el pasillo derecho.",
-  ),
-  Classroom(
-    name: "B104",
-    x: 0.17,
-    y: 0.63,
-    directions: "Desde la entrada principal avance recto y gire a la izquierda.",
-  ),
-  Classroom(
-    name: "B105",
-    x: 0.30,
-    y: 0.63,
-    directions: "Suba por la escalera y avance por el pasillo derecho.",
-  ),
-];
-
-final List<Classroom> aulasPlanta2 = [
-    Classroom(
-    name: "B101",
-    x: 0.17,
-    y: 0.21,
-    directions: "Desde la entrada principal avance recto y gire a la izquierda.",
-  ),
-  Classroom(
-    name: "B202",
-    x: 0.30,
-    y: 0.21,
-    directions: "Suba por la escalera y avance por el pasillo derecho.",
-  ),
-  Classroom(
-    name: "B204",
-    x: 0.17,
-    y: 0.63,
-    directions: "Desde la entrada principal avance recto y gire a la izquierda.",
-  ),
-  Classroom(
-    name: "B205",
-    x: 0.30,
-    y: 0.63,
-    directions: "Suba por la escalera y avance por el pasillo derecho.",
-  ),
-];
 
 // CustomPainter para dibujar la línea de ruta con flecha
 class RoutePainter extends CustomPainter {
@@ -281,7 +291,7 @@ class RoutePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.green.withOpacity(0.8)
+      ..color = Colors.green.withValues(alpha: 0.8)
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
@@ -347,7 +357,7 @@ class RoutePainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = Colors.green.withOpacity(0.8)
+        ..color = Colors.green.withValues(alpha: 0.8)
         ..style = PaintingStyle.fill,
     );
   }
