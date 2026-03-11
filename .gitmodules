@@ -1,0 +1,3 @@
+[submodule "instructions"]
+	path = instructions
+	url = https://github.com/fabianastudillo/instructions-copilot

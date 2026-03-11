@@ -6,6 +6,10 @@
     "x": 0.9,
     "y": 0.5
   },
+  "route_start": {
+    "x": 0.9,
+    "y": 0.5
+  },
   "classrooms": [
     {
       "name": "B101",

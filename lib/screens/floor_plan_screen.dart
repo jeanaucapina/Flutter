@@ -112,10 +112,10 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                 // Línea de ruta visual
                 if (selectedClassroom != null)
                   ...floorData!.classrooms.where((c) => c.name == selectedClassroom).map((destinationClass) {
-                    // Punto de entrada del edificio desde el JSON
+                    // Point where the indoor route starts, fully configurable in JSON.
                     final Offset startPoint = Offset(
-                      offsetX + displayedWidth * floorData!.entrance.dx,
-                      offsetY + displayedHeight * floorData!.entrance.dy,
+                      offsetX + displayedWidth * floorData!.routeStart.dx,
+                      offsetY + displayedHeight * floorData!.routeStart.dy,
                     );
                     final Offset endPoint = Offset(
                       offsetX + displayedWidth * destinationClass.x,
@@ -134,6 +134,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
                 // Classroom ejemplo
                 ...floorData!.classrooms.map((classroom) {
+                  final double markerSize = (displayedWidth * 0.06).clamp(30.0, 56.0).toDouble();
                   return Positioned(
                     left: offsetX + displayedWidth * classroom.x,
                     top: offsetY + displayedHeight * classroom.y,
@@ -146,18 +147,28 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                         _showClassroomInfo(context, classroom);
                       },
                       child: Container(
-                        width: displayedWidth * 0.05,
-                        height: displayedWidth * 0.05,
+                        width: markerSize,
+                        height: markerSize,
                         decoration: BoxDecoration(
                           color: (classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom)
                               ? Colors.red.withOpacity(0.7)
                               : Colors.blue.withOpacity(0.5),
                           border: Border.all(color: Colors.black),
                         ),
-                        child: Center(
-                          child: Text(
-                            classroom.name,
-                            style: const TextStyle(fontSize: 10),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                classroom.name,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: markerSize * 0.34,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
