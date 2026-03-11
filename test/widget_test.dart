@@ -13,7 +13,8 @@ void main() {
         child: const MyApp(),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Soy estudiante'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Campus Map'), findsOneWidget);
     expect(find.byIcon(Icons.search), findsWidgets);

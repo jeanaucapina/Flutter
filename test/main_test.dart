@@ -24,6 +24,8 @@ void main() {
           child: const MyApp(),
         ),
       );
+      await tester.tap(find.text('Soy estudiante'));
+      await tester.pumpAndSettle();
 
       // Find the theme toggle button
       final themeButton = find.byIcon(Icons.dark_mode);
@@ -37,6 +39,8 @@ void main() {
           child: const MyApp(),
         ),
       );
+      await tester.tap(find.text('Soy estudiante'));
+      await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.search), findsWidgets);
     });
@@ -48,6 +52,8 @@ void main() {
           child: const MyApp(),
         ),
       );
+      await tester.tap(find.text('Soy estudiante'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Campus Map'), findsOneWidget);
     });

@@ -8,6 +8,7 @@ location on the map when accessed from a mobile browser or device.
 ## Features
 
 - 🗺️ Interactive map with building markers and floor plans
+- 👤 Role-based start screen (Student / Visitor) with persistent selection
 - 🔍 Classroom search with deep linking to floor views
 - 🗓️ Editable schedule with guided selection: Block -> Floor -> Classroom
 - 📍 Geolocation tracking using the device's GPS (HTTPS required on web)

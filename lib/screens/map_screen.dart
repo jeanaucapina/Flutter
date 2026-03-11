@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../data/campus_data.dart';
+import '../models/app_role.dart';
 import '../models/search_classroom.dart';
 import '../search/classroom_search.dart';
 import '../services/classroom_index_service.dart';
@@ -20,7 +21,14 @@ import 'schedule_screen.dart';
 import 'widgets/map_screen_sections.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final AppRole role;
+  final VoidCallback? onChangeRole;
+
+  const MapScreen({
+    super.key,
+    required this.role,
+    this.onChangeRole,
+  });
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -45,19 +53,25 @@ class _MapScreenState extends State<MapScreen> {
   Set<String> _favoriteClassroomIds = <String>{};
   ScheduleItem? _nextClassItem;
 
+  bool get _isStudent => widget.role == AppRole.student;
+
   @override
   void initState() {
     super.initState();
     _startLocationTracking();
-    _loadFavorites();
-    _refreshNextClass(notify: false);
+    if (_isStudent) {
+      _loadFavorites();
+      _refreshNextClass(notify: false);
+    }
 
     ClassroomIndexService.loadIndex().then((index) {
       if (!mounted) return;
       setState(() {
         classroomIndex = index;
       });
-      _refreshNextClass();
+      if (_isStudent) {
+        _refreshNextClass();
+      }
     });
   }
 
@@ -270,11 +284,26 @@ class _MapScreenState extends State<MapScreen> {
               }
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.schedule),
-            tooltip: 'Ver y editar horario',
-            onPressed: _openScheduleScreen,
-          ),
+          if (_isStudent)
+            IconButton(
+              icon: const Icon(Icons.schedule),
+              tooltip: 'Ver y editar horario',
+              onPressed: _openScheduleScreen,
+            ),
+          if (widget.onChangeRole != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: TextButton.icon(
+                onPressed: widget.onChangeRole,
+                icon: const Icon(Icons.switch_account_outlined, size: 18),
+                label: const Text('Perfil'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, _) {
               return IconButton(
@@ -331,12 +360,13 @@ class _MapScreenState extends State<MapScreen> {
               );
             },
           ),
-          TopQuickPanel(
-            nextClassItem: _nextClassItem,
-            favoriteClassrooms: favoriteClassrooms,
-            onOpenNextClass: _openNextClass,
-            onSelectFavorite: _handleClassroomSelection,
-          ),
+          if (_isStudent)
+            TopQuickPanel(
+              nextClassItem: _nextClassItem,
+              favoriteClassrooms: favoriteClassrooms,
+              onOpenNextClass: _openNextClass,
+              onSelectFavorite: _handleClassroomSelection,
+            ),
           LocationStatusCard(
             isRequestingLocation: _isRequestingLocation,
             locationAvailable: _locationAvailable,
