@@ -1,148 +1,141 @@
-# campus_map_app
+# Campus Map App
 
-Campus Map is a Flutter application designed to help students and visitors
-navigate the university campus. The app loads floor plans for different
-buildings, allows searching for classrooms, and shows the user's real-time
-location on the map when accessed from a mobile browser or device.
+Aplicacion Flutter para navegar un campus universitario con mapa interactivo,
+busqueda de aulas, geolocalizacion, rutas y herramientas para estudiantes
+(horario, favoritos y tareas).
 
-## Features
+## Funcionalidades principales
 
-- 🗺️ Interactive map with building markers and floor plans
-- 👤 Role-based start screen (Student / Visitor) with persistent selection
-- 🔍 Classroom search with deep linking to floor views
-- 🗓️ Editable schedule with guided selection: Block -> Floor -> Classroom
-- 📍 Geolocation tracking using the device's GPS (HTTPS required on web)
-- 🧭 Status indicator for location permissions & GPS state, positioned above the follow-location button
-- 🛣️ Route calculation with distance and bearing display
-- 🌙 Dark mode toggle for comfortable viewing in any lighting
-- ♿ Accessibility features (adjustable text size: 80%, 100%, 120%)
-- 📱 Progressive Web App (PWA) ready - installable on home screen
-- 🎨 Smooth page transitions and animations
-- 📊 Route instructions with cardinal directions and distance
+- Mapa interactivo del campus con marcadores por bloque
+- Seleccion de perfil al iniciar (estudiante o visitante)
+- Persistencia del perfil en almacenamiento local
+- Busqueda de aulas con acceso directo a bloque/planta
+- Vista de planos por planta
+- Geolocalizacion en tiempo real
+- Calculo de ruta con distancia y orientacion
+- Favoritos de aulas (solo perfil estudiante)
+- Horario editable con seleccion guiada: bloque -> planta -> aula
+- Lista de tareas asociada al flujo academico
+- Tema claro/oscuro y opciones de accesibilidad
+- Preparada para ejecutarse como PWA en web
 
-## Schedule Editing
+## Estructura actual del proyecto
 
-The schedule editor now uses dependent dropdowns to avoid input mistakes:
-
-- Select building first
-- Then select floor for that building
-- Then select classroom for that floor
-
-The manual text fields for classroom/building/floor were removed, so users no
-longer need to type the same information twice.
-
-## Project Structure
-
-```
+```text
 lib/
-  main.dart                           # entry point, map screen and location logic
-  screens/
-    floor_plan_screen.dart           # displays a selected floor plan with classrooms
-  services/
-    floor_loader.dart                # loads JSON floor data
-    classroom_index_service.dart     # builds search index
-    theme_provider.dart              # manages dark/light theme and text scaling
-    route_handler.dart               # calculates routes and directions
-  search/
-    classroom_search.dart            # search delegate UI
-  models/
-    block.dart                       # campus building definitions
-    search_classroom.dart            # search result model
+  main.dart
   data/
-    campus_data.dart                 # hardcoded list of campus blocks
+    campus_data.dart
+  models/
+    app_role.dart
+    block.dart
+    search_classroom.dart
+  screens/
+    block_detail_screen.dart
+    floor_plan_screen.dart
+    map_screen.dart
+    role_selection_screen.dart
+    schedule_screen.dart
+    tasks_screen.dart
+    widgets/
+      map_screen_sections.dart
+  search/
+    classroom_search.dart
+  services/
+    classroom_index_service.dart
+    favorites_service.dart
+    floor_loader.dart
+    route_handler.dart
+    schedule_service.dart
+    tasks_service.dart
+    theme_provider.dart
   widgets/
-    animated_routes.dart             # custom page transition animations
-    distance_info_widget.dart        # displays route info card
+    animated_routes.dart
+    distance_info_widget.dart
+    route_painter.dart
 
-test/                                # unit tests and widget tests
-assets/                              # floor plans and JSON data files
-pubspec.yaml                         # dependencies and asset declarations
+assets/
+  data/
+  plans/
+
+test/
+  main_test.dart
+  route_handler_test.dart
+  widget_test.dart
 ```
 
-## Running
+## Requisitos
 
-### Web (Local Development)
+- Flutter SDK compatible con `sdk: ^3.11.0`
+- Dart incluido con Flutter
+- Navegador moderno para web (Chrome/Edge recomendado)
+
+## Como ejecutar
+
+### 1) Instalar dependencias
+
+```bash
+flutter pub get
+```
+
+### 2) Ejecutar en web (desarrollo local)
 
 ```bash
 flutter config --enable-web
 flutter run -d web-server --web-port 8081
-# open http://localhost:8081/ or https://<published-url>/
 ```
 
-> Note: Location permissions require HTTPS. For local testing with location:
-> - Use Chrome/Edge (they allow HTTP geolocation on localhost)
-> - Or use a local HTTPS server with mkcert or ngrok
-> - Or deploy to GitHub Pages for public HTTPS access
+Abrir en `http://localhost:8081/`.
 
-### Mobile
+Nota sobre ubicacion en web:
+- Para geolocalizacion, normalmente se requiere HTTPS.
+- `localhost` suele funcionar en navegadores modernos.
 
-Connect a device and run:
+### 3) Ejecutar en dispositivo/emulador
 
 ```bash
 flutter run
 ```
 
-## Deployment
-
-The app is deployed as a static site using GitHub Pages. The `build/web`
-folder contains the compiled output; it's automatically published to:
-
-```
-https://jeanaucapina.github.io/Flutter/
-```
-
-### Deploying Changes
-
-1. Build the web version:
-   ```bash
-   flutter build web
-   ```
-
-2. Deploy to GitHub Pages:
-   ```bash
-   git checkout gh-pages
-   git --work-tree=build/web add --all
-   git --work-tree=build/web commit -m "Deploy updated build"
-   git push origin gh-pages
-   git checkout main
-   ```
-
-## Testing
-
-Run unit tests:
+## Pruebas
 
 ```bash
 flutter test
 ```
 
-### Test Coverage
+Cobertura base incluida:
+- `test/route_handler_test.dart`
+- `test/main_test.dart`
+- `test/widget_test.dart`
 
-- `test/route_handler_test.dart` - Tests for route calculation and distance formatting
-- `test/main_test.dart` - Widget tests for theme toggle and UI elements
+## Despliegue web (GitHub Pages)
 
-## Technologies & Dependencies
+URL publicada:
 
-- **Flutter** - UI framework
-- **flutter_map** - Interactive map widget
-- **geolocator** - GPS location services
-- **provider** - State management
-- **google_fonts** - Typography
-- **latlong2** - Geographic coordinates
+`https://jeanaucapina.github.io/Flutter/`
 
-## Accessibility
+Flujo manual de despliegue:
 
-- 🌙 **Dark Mode** - Toggle dark/light theme via AppBar button
-- 🔤 **Text Scaling** - 3 presets (80%, 100%, 120%) in Accessibility menu
-- 🎯 **Tooltip Hints** - All buttons have descriptive tooltips
+```bash
+flutter build web
+git checkout gh-pages
+git --work-tree=build/web add --all
+git --work-tree=build/web commit -m "Deploy updated build"
+git push origin gh-pages
+git checkout main
+```
 
-## Architecture Notes
+## Dependencias principales
 
-The app uses the Provider pattern for state management (theme), clean service-based
-architecture for location and routing logic, and custom page transitions for smooth UX.
-Floor data is loaded asynchronously from JSON files in assets.
+- `flutter_map`
+- `latlong2`
+- `geolocator`
+- `provider`
+- `google_fonts`
+- `shared_preferences`
 
-## License
+## Licencia
 
-MIT License
+MIT
 
 
