@@ -4,7 +4,7 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#1976D2",
+    "theme_color": "#ffffff",
     "description": "Aplicación interactiva para navegar el campus universitario, encontrar aulas y visualizar planos de pisos con ubicación GPS en tiempo real.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
@@ -20,6 +20,24 @@
             "sizes": "512x512",
             "type": "image/png",
             "form_factor": "wide"
+        }
+    ],
+    "categories": [
+        "navigation",
+        "utilities"
+    ],
+    "shortcuts": [
+        {
+            "name": "Buscar Aula",
+            "short_name": "Buscar",
+            "description": "Busca una sala de clase rápidamente",
+            "url": "/?search=true",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
         }
     ],
     "icons": [
@@ -44,16 +62,6 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
-        }
-    ],
-    "categories": ["navigation", "utilities"],
-    "shortcuts": [
-        {
-            "name": "Buscar Aula",
-            "short_name": "Buscar",
-            "description": "Busca una sala de clase rápidamente",
-            "url": "/?search=true",
-            "icons": [{"src": "icons/Icon-192.png", "sizes": "192x192"}]
         }
     ]
 }

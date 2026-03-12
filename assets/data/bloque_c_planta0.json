@@ -1,0 +1,81 @@
+{
+  "building": "Bloque C",
+  "floor": 0,
+  "image": "assets/plans/bloque_c_planta0.png",
+  "entrance": {
+    "x": 0.084,
+    "y": 0.46
+  },
+  "route_start": {
+    "x": 0.081,
+    "y": 0.455
+  },
+  "classrooms": [
+    {
+      "name": "Sala Estudio",
+      "x": 0.214,
+      "y": 0.376,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Aso Telecomunicaciones",
+      "x": 0.121,
+      "y": 0.614,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Aso Eletricidad",
+      "x": 0.261,
+      "y": 0.603,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Aso Industrial",
+      "x": 0.34,
+      "y": 0.611,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Aso Ciencias Quimicas",
+      "x": 0.416,
+      "y": 0.607,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Lab Control",
+      "x": 0.867,
+      "y": 0.33,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "DTIC",
+      "x": 0.931,
+      "y": 0.614,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Lab Telecomunicaciones",
+      "x": 0.868,
+      "y": 0.608,
+      "directions": "Desde el ingreso del bloque, avanza recto por el corredor principal."
+    },
+    {
+      "name": "Bodegas",
+      "x": 0.65,
+      "y": 0.336,
+      "directions": ""
+    },
+    {
+      "name": "Bodegas",
+      "x": 0.647,
+      "y": 0.616,
+      "directions": ""
+    },
+    {
+      "name": "Asensor Bloque C",
+      "x": 0.83,
+      "y": 0.456,
+      "directions": ""
+    }
+  ]
+}

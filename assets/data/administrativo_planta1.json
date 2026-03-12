@@ -1,0 +1,27 @@
+{
+  "building": "Administrativo",
+  "floor": 2,
+  "image": "assets/plans/administrativo_planta2.png",
+  "entrance": {
+    "x": 0.525,
+    "y": 0.668
+  },
+  "route_start": {
+    "x": 0.525,
+    "y": 0.666
+  },
+  "classrooms": [
+    {
+      "name": "Salas Investigación",
+      "x": 0.538,
+      "y": 0.774,
+      "directions": "Desde la Entrada principal avanza recto"
+    },
+    {
+      "name": "Bodega Administración",
+      "x": 0.507,
+      "y": 0.665,
+      "directions": "Desde la entrada principal toma la mano derecha y avanza despues de las escalesras."
+    }
+  ]
+}

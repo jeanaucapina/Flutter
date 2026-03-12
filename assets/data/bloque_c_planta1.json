@@ -1,39 +1,69 @@
 {
-  "building":"Bloque C",
+  "building": "Bloque C",
   "floor": 1,
   "image": "assets/plans/bloque_c_planta1.png",
   "entrance": {
-    "x": 0.9,
-    "y": 0.5
+    "x": 0.379,
+    "y": 0.638
   },
   "route_start": {
-    "x": 0.9,
-    "y": 0.5
+    "x": 0.378,
+    "y": 0.644
   },
   "classrooms": [
     {
-      "name": "C101",
-      "x": 0.17,
-      "y": 0.21,
-      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+      "name": "Lab Redes",
+      "x": 0.879,
+      "y": 0.429,
+      "directions": "Desde la entrada principal avance a la derecha al final del pasillo"
     },
     {
-      "name": "C102",
-      "x": 0.30,
-      "y": 0.21,
-      "directions": "Suba por la escalera y avance por el pasillo derecho."
+      "name": "C 101 Lab Computacion",
+      "x": 0.747,
+      "y": 0.411,
+      "directions": "Desde la entrada principal avance a la derecha al final del pasillo"
     },
     {
-      "name": "C103",
-      "x": 0.17,
-      "y": 0.63,
-      "directions": "Desde la entrada principal avance recto y gire a la izquierda."
+      "name": "C102 Lab Computación",
+      "x": 0.63,
+      "y": 0.41,
+      "directions": "Desde la entrada principal avance a la derecha al final del pasillo"
+    },
+    {
+      "name": "C103 Lab Computación",
+      "x": 0.514,
+      "y": 0.413,
+      "directions": "Desde la entrada principal avance a la derecha al final del pasillo."
     },
     {
       "name": "C104",
-      "x": 0.30,
-      "y": 0.63,
-      "directions": "Suba por la escalera y avance por el pasillo derecho."
+      "x": 0.264,
+      "y": 0.476,
+      "directions": "Desde la entrada principal avance hacia la izquierda"
+    },
+    {
+      "name": "C105",
+      "x": 0.145,
+      "y": 0.466,
+      "directions": "Desde la entrada principal avance hacia la izquierda"
+    },
+    {
+      "name": "Lab Humano Maquina",
+      "x": 0.873,
+      "y": 0.322,
+      "directions": "Desde la entrada principal avance recto y gire a la derecha"
+    },
+    {
+      "name": "Baños Mujer Bloque C",
+      "x": 0.259,
+      "y": 0.351,
+      "directions": "Desde la entrada principal avance recto y gire hacia la izquierda"
+    },
+    {
+      "name": "Baños Hombres Bloque C",
+      "x": 0.141,
+      "y": 0.342,
+      "directions": "Desde la entrada principal avance recto y gire hacia la izquierda"
     }
   ]
 }

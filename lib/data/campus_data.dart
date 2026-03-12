@@ -69,6 +69,10 @@ final List<Block> campusBlocks = [
         number: 2,
         classrooms: aulasPlanta2,
       ),
+      Floor(
+        number: 3,
+        classrooms: aulasPlanta2,
+      ),
     ],
   ),
   Block(
@@ -76,6 +80,10 @@ final List<Block> campusBlocks = [
     code: "bloque_c",
     location: LatLng(-2.891215, -79.037825),
     floors: [
+      Floor(
+        number: 0,
+        classrooms: aulasPlanta1,
+      ),
       Floor(
         number: 1,
         classrooms: aulasPlanta1,
@@ -87,10 +95,15 @@ final List<Block> campusBlocks = [
     ],
   ),
   Block(
-    name: "Casona Balzay",
+    name: "Quinta Balzay",
     code: "casona_balzay",
     location: LatLng(-2.891692, -79.036291),
-    floors: [],
+    floors: [
+      Floor(
+        number: 1,
+        classrooms: aulasPlanta1,
+      ),
+    ],
   ),
   Block(
     name: "Microred",
@@ -102,6 +115,15 @@ final List<Block> campusBlocks = [
     name: "Administrativo",
     code: "administrativo",
     location: LatLng(-2.891258, -79.035521),
-    floors: [],
+    floors: [
+      Floor(
+        number: 1,
+        classrooms: aulasPlanta1,
+      ),
+      Floor(
+        number: 2,
+        classrooms: aulasPlanta2,
+      ),
+    ],
   ),
 ];

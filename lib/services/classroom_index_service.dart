@@ -10,7 +10,13 @@ class ClassroomIndexService {
     List<String> files = [
       "assets/data/bloque_b_planta1.json",
       "assets/data/bloque_b_planta2.json",
+      "assets/data/bloque_b_planta3.json",
+      "assets/data/bloque_c_planta0.json",
       "assets/data/bloque_c_planta1.json",
+      "assets/data/bloque_c_planta2.json",
+      "assets/data/administrativo_planta1.json",
+      "assets/data/administrativo_planta2.json",
+      "assets/data/casona_balzay_planta1.json",
     ];
 
     List<SearchClassroom> index = [];

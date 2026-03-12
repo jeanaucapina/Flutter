@@ -1,0 +1,21 @@
+{
+  "building": "Quinta Balzay",
+  "floor": 1,
+  "image": "assets/plans/quintaBalzay.png",
+  "entrance": {
+    "x": 0.422,
+    "y": 0.286
+  },
+  "route_start": {
+    "x": 0.414,
+    "y": 0.287
+  },
+  "classrooms": [
+    {
+      "name": "Cafereria",
+      "x": 0.414,
+      "y": 0.431,
+      "directions": "Desde el ingreso de Quinta Balzay, avanza hacia el ala central."
+    }
+  ]
+}

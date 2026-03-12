@@ -1,0 +1,39 @@
+{
+  "building": "Bloque C",
+  "floor": 2,
+  "image": "assets/plans/bloque_c_planta2.png",
+  "entrance": {
+    "x": 0.9,
+    "y": 0.5
+  },
+  "route_start": {
+    "x": 0.9,
+    "y": 0.5
+  },
+  "classrooms": [
+    {
+      "name": "C201",
+      "x": 0.763,
+      "y": 0.4,
+      "directions": "Sube al segundo nivel y tome el pasillo"
+    },
+    {
+      "name": "C202",
+      "x": 0.631,
+      "y": 0.388,
+      "directions": "Sube al segundo nivel y tome el pasillo"
+    },
+    {
+      "name": "C204",
+      "x": 0.52,
+      "y": 0.386,
+      "directions": "Sube al segundo nivel y tome el pasillo"
+    },
+    {
+      "name": "Lab Industrial",
+      "x": 0.888,
+      "y": 0.398,
+      "directions": "Suba las escalesras a mano izquierda"
+    }
+  ]
+}

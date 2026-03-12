@@ -1,4 +1,5 @@
 import 'package:campus_map_app/models/block.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/floor_loader.dart';
@@ -29,6 +30,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   FloorData? floorData;
   bool _hasPreviousFloor = false;
   bool _hasNextFloor = false;
+  double _imageAspectRatio = 2.5;
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
       setState(() {
         floorData = data;
       });
+      _loadImageAspectRatio(data.image);
       _refreshFloorNavigation(data.floor);
 
       if (widget.highlightClassroom != null) {
@@ -59,6 +62,21 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
 
     });
+  }
+
+  Future<void> _loadImageAspectRatio(String assetPath) async {
+    try {
+      final bytes = await rootBundle.load(assetPath);
+      final codec = await ui.instantiateImageCodec(bytes.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      if (!mounted || image.height == 0) return;
+      setState(() {
+        _imageAspectRatio = image.width / image.height;
+      });
+    } catch (_) {
+      // Keep default ratio if the image cannot be decoded.
+    }
   }
 
   String? _floorPathFor(int floor) {
@@ -137,8 +155,7 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           final double containerWidth = constraints.maxWidth;
           final double containerHeight = constraints.maxHeight;
 
-          // Relación real de tu imagen (ajusta si es diferente)
-          const double imageAspectRatio = 2.5; // ejemplo A4 vertical (ancho/alto)
+          final double imageAspectRatio = _imageAspectRatio;
 
           double displayedWidth;
           double displayedHeight;
@@ -155,6 +172,11 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
           final double offsetX = (containerWidth - displayedWidth) / 2;
           final double offsetY = (containerHeight - displayedHeight) / 2;
+          final double shortestSide = MediaQuery.of(context).size.shortestSide;
+          final bool isCompactScreen = shortestSide < 700;
+          final double markerBaseRatio = isCompactScreen ? 0.04 : 0.055;
+          final double markerMinSize = isCompactScreen ? 18.0 : 24.0;
+          final double markerMaxSize = isCompactScreen ? 34.0 : 56.0;
 
           return InteractiveViewer(
             minScale: 1,
@@ -197,11 +219,35 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                   }),
 
                 // Classroom ejemplo
-                ...floorData!.classrooms.map((classroom) {
-                  final double markerSize = (displayedWidth * 0.06).clamp(30.0, 56.0).toDouble();
+                ...() {
+                  final List<Rect> occupiedLabelRects = <Rect>[];
+                  return floorData!.classrooms.map((classroom) {
+                  final double markerSize =
+                      (displayedWidth * markerBaseRatio).clamp(markerMinSize, markerMaxSize).toDouble();
+                  final bool isSelected =
+                      classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom;
+                  final double labelMaxWidth =
+                      (displayedWidth * (isCompactScreen ? 0.30 : 0.22)).clamp(90.0, 210.0).toDouble();
+                  final double labelHeight = isCompactScreen ? 28.0 : 32.0;
+                  final pointX = offsetX + displayedWidth * classroom.x;
+                  final pointY = offsetY + displayedHeight * classroom.y;
+
+                  final Rect labelRect = Rect.fromLTWH(
+                    pointX - (labelMaxWidth / 2),
+                    pointY + (markerSize / 2) + 4,
+                    labelMaxWidth,
+                    labelHeight,
+                  );
+
+                  final bool overlapsAnother = occupiedLabelRects.any((rect) => rect.overlaps(labelRect));
+                  final bool showLabel = isSelected || !overlapsAnother;
+                  if (showLabel) {
+                    occupiedLabelRects.add(labelRect);
+                  }
+
                   return Positioned(
-                    left: offsetX + displayedWidth * classroom.x,
-                    top: offsetY + displayedHeight * classroom.y,
+                    left: pointX - markerSize / 2,
+                    top: pointY - markerSize / 2,
                     child: GestureDetector(
                       onTap: () {
                         setState(() {
@@ -210,35 +256,58 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
                         _showClassroomInfo(context, classroom);
                       },
-                      child: Container(
-                        width: markerSize,
-                        height: markerSize,
-                        decoration: BoxDecoration(
-                          color: (classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom)
-                              ? Colors.red.withValues(alpha: 0.7)
-                              : Colors.blue.withValues(alpha: 0.5),
-                          border: Border.all(color: Colors.black),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          child: Center(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                classroom.name,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: markerSize * 0.34,
-                                  fontWeight: FontWeight.w600,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: markerSize,
+                            height: markerSize,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.red.withValues(alpha: 0.85)
+                                  : Colors.blue.withValues(alpha: 0.75),
+                              border: Border.all(color: Colors.black),
+                              borderRadius: BorderRadius.circular(markerSize * 0.24),
+                            ),
+                            child: Icon(
+                              Icons.place,
+                              size: markerSize * 0.55,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (showLabel) ...[
+                            const SizedBox(height: 4),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxWidth: labelMaxWidth),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.black.withValues(alpha: 0.78)
+                                      : Colors.black.withValues(alpha: 0.62),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  classroom.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: isCompactScreen ? 10 : 11,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.1,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
+                          ],
+                        ],
                       ),
                     ),
                   );
-                }),
+                  });
+                }(),
               ],
             ),
           );
