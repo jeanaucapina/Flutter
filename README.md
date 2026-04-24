@@ -1,27 +1,39 @@
 # Campus Map App
 
-Aplicacion Flutter para navegar un campus universitario con mapa interactivo,
-busqueda de aulas, geolocalizacion, rutas y herramientas para estudiantes
-(horario, favoritos y tareas).
+Aplicacion Flutter para explorar un campus universitario con mapa interactivo,
+busqueda de aulas, planos por planta, geolocalizacion y herramientas orientadas
+tanto a estudiantes como a visitantes.
 
-## Funcionalidades principales
+## Resumen
+La aplicacion parte de una seleccion de perfil y luego muestra un mapa del
+campus con acceso a bloques, aulas y rutas. Para estudiantes, ademas habilita
+favoritos, horario y tareas. La informacion de planos y aulas se carga desde
+archivos JSON incluidos en `assets/data/`.
 
-- Mapa interactivo del campus con marcadores por bloque
-- Seleccion de perfil al iniciar (estudiante o visitante)
-- Persistencia del perfil en almacenamiento local
-- Busqueda de aulas con acceso directo a bloque/planta
-- Vista de planos por planta
-- Marcadores y etiquetas responsivas para pantallas pequenas y grandes
-- Etiquetas anti-solapamiento en zonas con muchas aulas (la seleccionada siempre visible)
-- Geolocalizacion en tiempo real
-- Calculo de ruta con distancia y orientacion
-- Favoritos de aulas (solo perfil estudiante)
-- Horario editable con seleccion guiada: bloque -> planta -> aula
-- Lista de tareas asociada al flujo academico
-- Tema claro/oscuro y opciones de accesibilidad
-- Preparada para ejecutarse como PWA en web
+## Funcionalidades
+- Mapa interactivo del campus con bloques navegables.
+- Seleccion de perfil al iniciar: estudiante o visitante.
+- Persistencia local del perfil seleccionado.
+- Busqueda de aulas con acceso directo al bloque y planta.
+- Visualizacion de planos por planta.
+- Geolocalizacion en tiempo real.
+- Calculo de ruta con distancia y orientacion.
+- Favoritos de aulas para perfil estudiante.
+- Horario editable con seleccion guiada de bloque, planta y aula.
+- Lista de tareas asociada al flujo academico.
+- Tema claro y oscuro.
+- Compatibilidad con web, Android, iOS, Windows, Linux y macOS.
+## Stack tecnico
 
-## Estructura actual del proyecto
+- Flutter
+- Dart
+- `flutter_map` para el mapa
+- `latlong2` para calculos geograficos
+- `geolocator` para ubicacion
+- `provider` para estado simple
+- `shared_preferences` para persistencia local
+- `google_fonts` para tipografia
+## Estructura del proyecto
 
 ```text
 lib/
@@ -60,76 +72,20 @@ assets/
   data/
   plans/
 
+tool/
+  floor_editor.dart
+
 test/
   main_test.dart
   route_handler_test.dart
   widget_test.dart
-```
 
-## Requisitos
+## Datos y assets
 
-- Flutter SDK compatible con `sdk: ^3.11.0`
-- Dart incluido con Flutter
-- Navegador moderno para web (Chrome/Edge recomendado)
+Los planos y metadatos de aulas se encuentran en:
 
-## Como ejecutar
-
-### 1) Instalar dependencias
-
-```bash
-flutter pub get
-```
-
-### 2) Ejecutar en web (desarrollo local)
-
-```bash
-flutter config --enable-web
-flutter run -d web-server --web-port 8081
-```
-
-Abrir en `http://localhost:8081/`.
-
-Nota sobre ubicacion en web:
-- Para geolocalizacion, normalmente se requiere HTTPS.
-- `localhost` suele funcionar en navegadores modernos.
-
-### 3) Ejecutar en dispositivo/emulador
-
-```bash
-flutter run
-```
-
-## Editor visual de JSON (herramienta separada)
-
-Se agrego una herramienta de desarrollo independiente para crear/editar aulas
-con clic sobre el plano, sin integrarla al flujo principal de la app.
-
-Archivo de entrada:
-- `tool/floor_editor.dart`
-
-Ejecutar en Windows:
-
-```bash
-flutter run -d windows -t tool/floor_editor.dart
-```
-
-Ejecutar en Web:
-
-```bash
-flutter run -d web-server -t tool/floor_editor.dart --web-port 8082
-```
-
-Uso rapido:
-- Carga un JSON desde `assets/data/...`
-- Elige modo (agregar aula, mover aula, entrada, inicio de ruta)
-- Puedes arrastrar la entrada y el inicio de ruta directamente sobre el plano
-- Haz clic sobre el plano para posicionar
-- Guarda directo en archivo con `Guardar JSON en archivo` (Windows/macOS/Linux)
-- En Web, usa `Copiar JSON generado` y pegalo en el archivo correspondiente
-
-Notas importantes:
-- El editor usa la proporcion real de la imagen para evitar desfases de posicion
-- La app movil usa el mismo calculo de proporcion para mantener consistencia
+- `assets/data/`
+- `assets/plans/`
 
 JSON incluidos actualmente:
 - `assets/data/administrativo_planta1.json`
@@ -142,40 +98,134 @@ JSON incluidos actualmente:
 - `assets/data/bloque_c_planta2.json`
 - `assets/data/casona_balzay_planta1.json`
 
-## Icono de la aplicacion
+## Requisitos
 
-Se configuro el icono de launcher para Android, iOS, Web, Windows y macOS
-usando esta imagen:
+- Flutter SDK compatible con `sdk: ^3.11.0`
+- Dart incluido con Flutter
+- Dispositivo, emulador o navegador compatible
 
-- `assets/plans/ico.png`
+Verifica tu entorno con:
+```bash
+flutter doctor
+```
 
-## Pruebas
+## Instalacion
+
+```bash
+flutter pub get
+```
+
+## Ejecucion
+
+### App principal
+
+En cualquier plataforma disponible:
+```bash
+flutter run
+```
+
+En web local:
+```bash
+flutter config --enable-web
+flutter run -d web-server --web-port 8081
+```
+
+Luego abre `http://localhost:8081/`.
+
+Nota sobre geolocalizacion en web:
+
+- Normalmente requiere HTTPS.
+- `localhost` suele estar permitido por los navegadores modernos.
+
+### Plataformas especificas
+
+Ejemplos:
+```bash
+flutter run -d chrome
+flutter run -d windows
+flutter run -d android
+```
+
+Puedes ver los dispositivos disponibles con:
+```bash
+flutter devices
+```
+
+## Herramienta auxiliar: editor visual de pisos
+
+El proyecto incluye una herramienta separada para crear o ajustar aulas sobre
+los planos y exportar el JSON correspondiente.
+
+Archivo:
+
+- `tool/floor_editor.dart`
+
+Ejecutar en Windows:
+```bash
+flutter run -d windows -t tool/floor_editor.dart
+```
+
+Ejecutar en web:
+```bash
+flutter run -d web-server -t tool/floor_editor.dart --web-port 8082
+```
+
+Uso rapido:
+- Cargar un JSON desde `assets/data/...`
+- Agregar aulas
+- Mover aulas existentes
+- Definir entrada
+- Definir inicio de ruta
+- Guardar el archivo directamente en escritorio
+- Copiar el JSON al portapapeles cuando se usa en web
+
+Notas:
+- En web no se guarda directamente en archivo.
+- La herramienta usa posiciones normalizadas para mantener consistencia entre
+  pantallas y plataformas.
+
+## Calidad y pruebas
+
+Analisis estatico:
+
+```bash
+flutter analyze
+```
+
+Pruebas:
 
 ```bash
 flutter test
 ```
 
-Cobertura base incluida:
-- `test/route_handler_test.dart`
+Cobertura actual:
 - `test/main_test.dart`
+- `test/route_handler_test.dart`
 - `test/widget_test.dart`
 
-## Despliegue web (GitHub Pages)
+## Build web
 
-URL publicada:
-
-`https://jeanaucapina.github.io/Flutter/`
-
-Flujo manual de despliegue:
+Para generar la version web:
 
 ```bash
 flutter build web
-git checkout gh-pages
-git --work-tree=build/web add --all
-git --work-tree=build/web commit -m "Deploy updated build"
-git push origin gh-pages
-git checkout main
 ```
+
+Si el sitio se publica en GitHub Pages bajo el repositorio `Flutter`, usa:
+```bash
+flutter build web --base-href /Flutter/
+```
+
+URL publicada actualmente:
+- `https://jeanaucapina.github.io/Flutter/`
+
+## Icono de la aplicacion
+
+El icono configurado para Android, iOS, web, Windows y macOS usa:
+
+- `assets/plans/ico.png`
+
+Configuracion en `pubspec.yaml` mediante `flutter_launcher_icons`.
 
 ## Dependencias principales
 

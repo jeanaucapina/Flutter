@@ -385,6 +385,7 @@ class _FloorEditorScreenState extends State<FloorEditorScreen> {
                       SizedBox(
                         width: 300,
                         child: DropdownButtonFormField<String>(
+                          isExpanded: true,
                           initialValue: _presetJsonPaths.contains(_pathCtrl.text)
                               ? _pathCtrl.text
                               : null,
@@ -393,7 +394,23 @@ class _FloorEditorScreenState extends State<FloorEditorScreen> {
                               .map(
                                 (path) => DropdownMenuItem<String>(
                                   value: path,
-                                  child: Text(path),
+                                  child: Text(
+                                    path,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          selectedItemBuilder: (context) => _presetJsonPaths
+                              .map(
+                                (path) => Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    path,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               )
                               .toList(),

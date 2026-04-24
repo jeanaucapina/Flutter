@@ -1,0 +1,67 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[scaled=0.97]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{tikz}
+\usetikzlibrary{calc,positioning,fit,arrows.meta,bending}
+
+\definecolor{FlutterLight}{HTML}{48C4FA}
+\definecolor{FlutterBlue}{HTML}{248DCC}
+\definecolor{FlutterDark}{HTML}{01559D}
+\definecolor{FlutterNavy}{HTML}{033875}
+\definecolor{SoftGray}{HTML}{F5F8FB}
+\definecolor{LineGray}{HTML}{DCE6F0}
+\definecolor{TextGray}{HTML}{1D2730}
+\definecolor{MutedGray}{HTML}{5F6C76}
+
+\begin{document}
+\begin{tikzpicture}[
+  main/.style={rounded corners=14pt, draw=FlutterBlue, fill=FlutterBlue!10,
+               minimum width=2.55cm, minimum height=1.0cm, align=center,
+               font=\normalsize\bfseries, text=FlutterDark, inner sep=8pt},
+  prof/.style={rounded corners=10pt, draw=FlutterNavy, fill=FlutterNavy!10,
+               minimum width=2.2cm, minimum height=0.78cm, align=center,
+               font=\small\bfseries, text=FlutterNavy, inner sep=5pt},
+  xtra/.style={rounded corners=8pt, draw=LineGray, fill=SoftGray,
+               minimum width=2.2cm, minimum height=0.72cm, align=center,
+               font=\small, text=MutedGray, inner sep=5pt},
+  arr/.style={-{Latex[length=3mm]}, very thick, color=FlutterBlue},
+  narr/.style={-{Latex[length=2.5mm]}, thick, color=FlutterNavy},
+  darr/.style={-{Latex[length=2mm]}, dashed, thick, color=MutedGray},
+]
+  % Flujo principal
+  \node[main] (p)  at (1.4, 0)  {Elegir\\perfil};
+  \node[main] (b)  at (4.6, 0)  {Buscar\\aula};
+  \node[main] (m)  at (7.8, 0)  {Mapa del\\campus};
+  \node[main] (pl) at (11.0,0)  {Plano de\\planta};
+  \node[main] (a)  at (14.2,0)  {Aula\\destacada};
+
+  \draw[arr] (p) -- (b);
+  \draw[arr] (b) -- (m);
+  \draw[arr] (m) -- (pl);
+  \draw[arr] (pl) -- (a);
+
+  % Perfiles de entrada
+  \node[prof] (vis) at (0.0,-1.8) {Visitante};
+  \node[prof] (est) at (2.8,-1.8) {Estudiante};
+  \draw[narr] (vis.north) -- (p.south west);
+  \draw[narr] (est.north) -- (p.south east);
+
+  % Extras del Estudiante
+  \node[prof,anchor=east] (elabel) at (5.9,1.9) {+~Estudiante};
+  \node[xtra] (fav) at (7.8, 1.9) {Favoritos};
+  \node[xtra] (hor) at (11.0,1.9) {Horario};
+  \node[xtra] (nx)  at (14.2,1.9) {Sig.~clase};
+
+  \draw[narr] (elabel.east) -- (fav.west);
+  \draw[narr] (fav) -- (hor);
+  \draw[narr] (hor) -- (nx);
+
+  % Extras conectados al flujo base (linea punteada)
+  \draw[darr] (fav.south) -- (m.north);
+  \draw[darr] (hor.south) -- (pl.north);
+  \draw[darr] (nx.south)  -- (a.north);
+\end{tikzpicture}
+\end{document}

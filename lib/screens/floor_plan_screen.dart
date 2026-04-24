@@ -1,4 +1,5 @@
 import 'package:campus_map_app/models/block.dart';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,6 +32,14 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
   bool _hasPreviousFloor = false;
   bool _hasNextFloor = false;
   double _imageAspectRatio = 2.5;
+  final TransformationController _transformController = TransformationController();
+  double _zoomScale = 1.0;
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -147,6 +156,16 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
             tooltip: 'Subir planta',
             onPressed: _hasNextFloor ? () => _navigateToFloor(floorData!.floor + 1) : null,
           ),
+          if (selectedClassroom != null)
+            IconButton(
+              icon: const Icon(Icons.clear),
+              tooltip: 'Quitar ruta',
+              onPressed: () {
+                setState(() {
+                  selectedClassroom = null;
+                });
+              },
+            ),
         ],
       ),
         body: LayoutBuilder(
@@ -177,8 +196,18 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
           final double markerBaseRatio = isCompactScreen ? 0.04 : 0.055;
           final double markerMinSize = isCompactScreen ? 18.0 : 24.0;
           final double markerMaxSize = isCompactScreen ? 34.0 : 56.0;
+          final double zoom = _zoomScale <= 0 ? 1.0 : _zoomScale;
+          final double zoomShrinkFactor = 1 / math.pow(zoom, 1.18);
 
           return InteractiveViewer(
+            transformationController: _transformController,
+            onInteractionUpdate: (_) {
+              final current = _transformController.value.getMaxScaleOnAxis();
+              if (!mounted) return;
+              setState(() {
+                _zoomScale = current;
+              });
+            },
             minScale: 1,
             maxScale: 5,
             child: Stack(
@@ -221,45 +250,55 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                 // Classroom ejemplo
                 ...() {
                   final List<Rect> occupiedLabelRects = <Rect>[];
-                  return floorData!.classrooms.map((classroom) {
-                  final double markerSize =
-                      (displayedWidth * markerBaseRatio).clamp(markerMinSize, markerMaxSize).toDouble();
-                  final bool isSelected =
-                      classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom;
-                  final double labelMaxWidth =
-                      (displayedWidth * (isCompactScreen ? 0.30 : 0.22)).clamp(90.0, 210.0).toDouble();
-                  final double labelHeight = isCompactScreen ? 28.0 : 32.0;
-                  final pointX = offsetX + displayedWidth * classroom.x;
-                  final pointY = offsetY + displayedHeight * classroom.y;
+                  final List<Widget> widgets = <Widget>[];
+                  for (final classroom in floorData!.classrooms) {
+                    final double markerSize = ((displayedWidth * markerBaseRatio) * zoomShrinkFactor)
+                        .clamp(markerMinSize * 0.55, markerMaxSize)
+                        .toDouble();
+                    final bool isSelected =
+                        classroom.name == widget.highlightClassroom || classroom.name == selectedClassroom;
+                    final bool hideRegularLabelsByZoom = zoom >= 3.5;
+                    final double labelShrinkFactor = 1 / math.pow(zoom, 1.15);
+                    final double labelMaxWidth = ((displayedWidth * (isCompactScreen ? 0.30 : 0.22)) *
+                        labelShrinkFactor)
+                      .clamp(52.0, 210.0)
+                      .toDouble();
+                    final double labelHeight =
+                      ((isCompactScreen ? 28.0 : 32.0) * labelShrinkFactor).clamp(14.0, 40.0).toDouble();
+                    final double labelFontSize =
+                      (((isCompactScreen ? 10.0 : 11.0) * labelShrinkFactor).clamp(6.0, 11.0)).toDouble();
+                    final double labelPaddingH = (6.0 * labelShrinkFactor).clamp(2.0, 6.0).toDouble();
+                    final double labelPaddingV = (3.0 * labelShrinkFactor).clamp(1.0, 3.0).toDouble();
+                    final double labelRadius = (8.0 * labelShrinkFactor).clamp(3.0, 8.0).toDouble();
+                    final pointX = offsetX + displayedWidth * classroom.x;
+                    final pointY = offsetY + displayedHeight * classroom.y;
 
-                  final Rect labelRect = Rect.fromLTWH(
-                    pointX - (labelMaxWidth / 2),
-                    pointY + (markerSize / 2) + 4,
-                    labelMaxWidth,
-                    labelHeight,
-                  );
+                    final Rect labelRect = Rect.fromLTWH(
+                      pointX - (labelMaxWidth / 2),
+                      pointY + (markerSize / 2) + 4,
+                      labelMaxWidth,
+                      labelHeight,
+                    );
 
-                  final bool overlapsAnother = occupiedLabelRects.any((rect) => rect.overlaps(labelRect));
-                  final bool showLabel = isSelected || !overlapsAnother;
-                  if (showLabel) {
-                    occupiedLabelRects.add(labelRect);
-                  }
+                    final bool overlapsAnother =
+                        occupiedLabelRects.any((rect) => rect.overlaps(labelRect));
+                    final bool showLabel = isSelected || (!hideRegularLabelsByZoom && !overlapsAnother);
+                    if (showLabel) {
+                      occupiedLabelRects.add(labelRect);
+                    }
 
-                  return Positioned(
-                    left: pointX - markerSize / 2,
-                    top: pointY - markerSize / 2,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedClassroom = classroom.name;
-                        });
-
-                        _showClassroomInfo(context, classroom);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
+                    widgets.add(
+                      Positioned(
+                        left: pointX - markerSize / 2,
+                        top: pointY - markerSize / 2,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedClassroom = classroom.name;
+                            });
+                            _showClassroomInfo(context, classroom);
+                          },
+                          child: Container(
                             width: markerSize,
                             height: markerSize,
                             decoration: BoxDecoration(
@@ -275,38 +314,53 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
                               color: Colors.white,
                             ),
                           ),
-                          if (showLabel) ...[
-                            const SizedBox(height: 4),
-                            ConstrainedBox(
-                              constraints: BoxConstraints(maxWidth: labelMaxWidth),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? Colors.black.withValues(alpha: 0.78)
-                                      : Colors.black.withValues(alpha: 0.62),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  classroom.name,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: isCompactScreen ? 10 : 11,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.1,
-                                  ),
+                        ),
+                      ),
+                    );
+
+                    if (showLabel) {
+                      widgets.add(
+                        Positioned(
+                          left: pointX - (labelMaxWidth / 2),
+                          top: pointY + (markerSize / 2) + 4,
+                          width: labelMaxWidth,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                selectedClassroom = classroom.name;
+                              });
+                              _showClassroomInfo(context, classroom);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: labelPaddingH,
+                                vertical: labelPaddingV,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.black.withValues(alpha: 0.78)
+                                    : Colors.black.withValues(alpha: 0.62),
+                                borderRadius: BorderRadius.circular(labelRadius),
+                              ),
+                              child: Text(
+                                _compactLabel(classroom.name),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: labelFontSize,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.1,
                                 ),
                               ),
                             ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
-                  });
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                  return widgets;
                 }(),
               ],
             ),
@@ -318,6 +372,51 @@ class _FloorPlanScreenState extends State<FloorPlanScreen> {
 
 
     );
+  }
+
+  String _compactLabel(String raw) {
+    final source = raw.trim();
+    if (source.length <= 18) return source;
+
+    final tokens = source.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+    if (tokens.isEmpty) return source;
+
+    final abbreviations = <String, String>{
+      'secretaria': 'Sec.',
+      'decanato': 'Dec.',
+      'decanatura': 'Dec.',
+      'ciencias': 'Cien.',
+      'quimicas': 'Quim.',
+      'quimica': 'Quim.',
+      'laboratorio': 'Lab.',
+      'ingenieria': 'Ing.',
+      'administrativo': 'Adm.',
+      'facultad': 'Fac.',
+      'unidad': 'Und.',
+      'investigacion': 'Inv.',
+    };
+
+    final compact = tokens
+        .map((word) {
+          final key = word.toLowerCase();
+          if (abbreviations.containsKey(key)) {
+            return abbreviations[key]!;
+          }
+          if (word.length > 10) {
+            return '${word.substring(0, 6)}.';
+          }
+          return word;
+        })
+        .toList()
+        .join(' ');
+
+    if (compact.length <= 22) return compact;
+
+    final shortened = tokens
+        .take(3)
+        .map((w) => w.length <= 4 ? w : '${w.substring(0, 4)}.')
+        .join(' ');
+    return shortened;
   }
 
   void _showClassroomInfo(BuildContext context, Classroom classroom) {

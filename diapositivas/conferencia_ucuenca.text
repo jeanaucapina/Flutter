@@ -1,0 +1,232 @@
+CONFERENCIA UCUENCA - GUIA DE CONTENIDO BASADA EN "Flutter UCuenca Template.pptx"
+
+Objetivo general:
+Presentar una aplicacion Flutter para orientacion dentro del campus universitario, mostrando el problema que resuelve, la arquitectura implementada, las decisiones tecnicas mas relevantes y el valor que aporta a estudiantes y visitantes.
+
+Duracion recomendada:
+20 minutos de exposicion + 5 minutos finales para preguntas.
+
+Estructura sugerida:
+Usar la portada del template y duplicar los layouts de imagen, lista y texto continuo para construir la presentacion completa.
+
+==================================================
+DIAPOSITIVA 1
+LAYOUT: PORTADA
+TIEMPO: 1 minuto
+
+Texto en pantalla:
+Campus Map App
+Navegacion universitaria inteligente con Flutter
+
+Subtitulo sugerido:
+Mapa interactivo, busqueda de aulas, rutas y herramientas academicas para UCuenca
+
+Pie opcional:
+Tu nombre - UCuenca / Flutter Ecuador
+
+Guion del expositor:
+Buenos dias. En esta charla voy a presentar Campus Map App, una aplicacion desarrollada con Flutter para mejorar la orientacion dentro del campus universitario. El proyecto nace de una necesidad concreta: estudiantes y visitantes suelen perder tiempo buscando bloques, aulas o rutas dentro de un entorno fisico que no siempre resulta intuitivo. La propuesta combina mapa del campus, geolocalizacion, busqueda de aulas, planos por planta y herramientas utiles para el dia a dia academico, todo dentro de una sola experiencia multiplataforma.
+
+Transicion sugerida:
+Primero quiero explicar el problema real que intentamos resolver y por que Flutter fue una buena decision para este caso.
+
+==================================================
+DIAPOSITIVA 2
+LAYOUT: TEXTO CONTINUO
+TIEMPO: 2 minutos
+
+Titulo:
+Problema y oportunidad
+
+Texto en pantalla:
+En un campus universitario, encontrar rapidamente un aula no siempre es sencillo. Esto afecta a estudiantes nuevos, visitantes, docentes y personal administrativo. La dificultad aumenta cuando se necesita pasar del mapa general del campus a la ubicacion precisa dentro de un edificio o incluso dentro de una planta especifica. Nuestra solucion propone una experiencia integrada: descubrir bloques, ubicar aulas, estimar recorridos y acceder a informacion academica relevante desde una sola aplicacion.
+
+Guion del expositor:
+El problema no es solo geografico, sino tambien de contexto. No basta con saber en que bloque esta una clase; muchas veces tambien hace falta conocer la planta, la ubicacion exacta del aula y la mejor manera de llegar desde la posicion actual del usuario. Ademas, un estudiante no vive la universidad igual que un visitante. Por eso la aplicacion introduce perfiles de uso y adapta ciertas funciones segun el contexto. La oportunidad aqui fue construir una herramienta que unifique orientacion fisica y apoyo academico sin obligar al usuario a saltar entre distintas aplicaciones o sistemas.
+
+Mensaje clave:
+El valor del proyecto esta en conectar orientacion espacial y flujo academico en una sola interfaz.
+
+==================================================
+DIAPOSITIVA 3
+LAYOUT: LISTA CON VINETAS
+TIEMPO: 2 minutos
+
+Titulo:
+Por que Flutter
+
+Texto en pantalla:
+- Una sola base de codigo para web, movil y escritorio
+- Interfaz consistente y facil de mantener
+- Buen soporte para mapas, geolocalizacion y estado reactivo
+- Rapidez para prototipar y validar cambios visuales
+- Posibilidad de publicar como PWA para acceso inmediato
+
+Guion del expositor:
+Flutter fue una eleccion estrategica. El proyecto necesitaba una interfaz visual rica, soporte para interaccion tactil, navegacion fluida y la posibilidad de ejecutarse en varios entornos. Con una sola base de codigo pudimos mantener consistencia entre plataformas y acelerar el desarrollo. Tambien fue importante el ecosistema: utilizamos paquetes como flutter_map para el mapa, geolocator para la ubicacion, provider para manejar estado de forma simple y shared_preferences para persistencia local. Esto nos permitio enfocarnos en la experiencia del usuario en lugar de fragmentar el desarrollo por plataforma.
+
+Transicion sugerida:
+Con esa base tecnologica, estructuramos la app alrededor de un flujo muy claro de navegacion y busqueda.
+
+==================================================
+DIAPOSITIVA 4
+LAYOUT: TEXTO CONTINUO
+TIEMPO: 3 minutos
+
+Titulo:
+Arquitectura de la solucion
+
+Texto en pantalla:
+La aplicacion esta organizada en capas sencillas y mantenibles. En la entrada principal se define el tema y el flujo inicial de perfil. Desde ahi se accede a una pantalla central de mapa, donde convergen geolocalizacion, seleccion de destino y herramientas de acceso rapido. Los datos de aulas y plantas se cargan desde archivos JSON, mientras que servicios dedicados gestionan favoritos, horario, tareas, temas visuales e indexacion para busqueda. Esta estructura permite evolucionar funciones sin volver fragil la interfaz.
+
+Guion del expositor:
+La arquitectura no busca complejidad, sino claridad. La pantalla principal concentra el contexto vivo del usuario: ubicacion actual, destino, favoritos y siguiente clase. A su alrededor existen servicios especializados. Por ejemplo, el indice de aulas se carga para alimentar la busqueda; el servicio de horario identifica la siguiente clase segun la hora actual; y el cargador de plantas interpreta los archivos JSON que describen cada edificio. Para la navegacion interior, la app no depende de logica dura embebida en widgets, sino de datos configurables por planta. Eso hace que ampliar cobertura a nuevos edificios sea mucho mas viable.
+
+Punto tecnico a remarcar:
+La app esta guiada por datos. Cambiar o agregar aulas y puntos de ruta se vuelve un problema de contenido, no de reescritura de interfaz.
+
+==================================================
+DIAPOSITIVA 5
+LAYOUT: DOS IMAGENES
+TIEMPO: 3 minutos
+
+Titulo:
+Experiencia principal del usuario
+
+Imagen 1 sugerida:
+Captura del mapa general del campus con bloques visibles.
+
+Imagen 2 sugerida:
+Captura con ubicacion del usuario, destino seleccionado y acciones de ruta.
+
+Texto breve opcional en pantalla:
+Del mapa general a la navegacion contextual
+
+Guion del expositor:
+Aqui vemos el flujo principal. El usuario ingresa y accede al mapa del campus. Si ya concedio permisos, la aplicacion obtiene su ubicacion en tiempo real y puede centrar el mapa automaticamente. Cuando el usuario selecciona un bloque o un aula desde la busqueda, la app establece un destino y presenta acciones concretas: seguir la ubicacion, limpiar la ruta o abrir la navegacion interior del edificio. Esta transicion del exterior al interior es una de las fortalezas del proyecto porque evita que la experiencia se corte justo en el momento mas importante, que es cuando el usuario ya llego al bloque y necesita encontrar el aula exacta.
+
+Demostracion oral recomendada:
+Si haces demo en vivo, este es el momento para mostrar el mapa, seleccionar un aula y activar el flujo de ruta.
+
+==================================================
+DIAPOSITIVA 6
+LAYOUT: DOS IMAGENES
+TIEMPO: 3 minutos
+
+Titulo:
+Busqueda e interiores por planta
+
+Imagen 1 sugerida:
+Captura del buscador de aulas.
+
+Imagen 2 sugerida:
+Captura del plano de una planta con aula resaltada y linea de ruta interior.
+
+Texto breve opcional en pantalla:
+Busqueda rapida + plano detallado + ruta visual
+
+Guion del expositor:
+La busqueda de aulas fue pensada como una puerta de acceso rapido a toda la aplicacion. En lugar de obligar al usuario a navegar manualmente por bloques y pisos, el sistema indexa aulas y permite llegar directamente al destino. Una vez seleccionada un aula, el usuario puede abrir el plano de la planta correspondiente. En esa vista se muestra la imagen del piso, los marcadores de aulas y una ruta interior visual desde un punto de inicio configurable. Tambien se incorporaron medidas de usabilidad importantes, como etiquetas responsivas, control de zoom y logica para evitar solapamientos en zonas densas.
+
+Punto tecnico a remarcar:
+El comportamiento visual del plano depende del zoom y del espacio disponible, lo que mejora la legibilidad en pantallas pequenas y grandes.
+
+==================================================
+DIAPOSITIVA 7
+LAYOUT: LISTA CON VINETAS
+TIEMPO: 2.5 minutos
+
+Titulo:
+Funciones orientadas al estudiante
+
+Texto en pantalla:
+- Seleccion de perfil al iniciar: estudiante o visitante
+- Favoritos para aulas frecuentes
+- Horario editable con seleccion guiada de bloque, planta y aula
+- Acceso rapido a la siguiente clase segun la hora actual
+- Lista de tareas integrada al flujo academico
+- Tema claro/oscuro y opciones de accesibilidad
+
+Guion del expositor:
+Una decision importante fue no tratar a todos los usuarios igual. El perfil de visitante necesita orientacion basica; el perfil de estudiante requiere continuidad en el uso. Por eso se incorporaron favoritos, horario editable y acceso directo a la siguiente clase. Esto convierte la app en una herramienta de uso diario y no solo en un mapa ocasional. Tambien se consideraron opciones de accesibilidad, como ajuste de escala de texto y cambio de tema, porque una aplicacion universitaria debe funcionar para una comunidad diversa y en distintos contextos de uso.
+
+Mensaje clave:
+La aplicacion no solo responde a la pregunta "donde estoy", sino tambien a "que necesito hacer ahora".
+
+==================================================
+DIAPOSITIVA 8
+LAYOUT: LISTA CON VINETAS
+TIEMPO: 2.5 minutos
+
+Titulo:
+Retos tecnicos y como se resolvieron
+
+Texto en pantalla:
+- Mantener consistencia entre mapa general y planos interiores
+- Evitar etiquetas sobrepuestas en zonas con muchas aulas
+- Adaptar la interfaz a distintos tamanos de pantalla
+- Gestionar permisos y estados de geolocalizacion en tiempo real
+- Mantener datos editables sin volver rigida la implementacion
+
+Guion del expositor:
+Uno de los retos fue conectar dos niveles de navegacion: el campus completo y los interiores por planta. Otro reto importante fue la legibilidad de aulas en zonas densas. En la vista de planos se implemento una logica para mostrar siempre el aula seleccionada y ocultar etiquetas cuando el zoom hace que la interfaz se vuelva ruidosa. Tambien fue necesario manejar estados reales de geolocalizacion: servicio apagado, permiso denegado o permiso permanente rechazado. Finalmente, se opto por un enfoque guiado por datos JSON y una herramienta separada para editar planos, lo cual reduce el costo de mantenimiento a futuro.
+
+Valor para la audiencia tecnica:
+Muchas veces el verdadero desafio no es dibujar un mapa, sino hacer que los datos, el estado y la experiencia visual se mantengan coherentes juntos.
+
+==================================================
+DIAPOSITIVA 9
+LAYOUT: TEXTO CONTINUO
+TIEMPO: 2 minutos
+
+Titulo:
+Resultados y proyeccion
+
+Texto en pantalla:
+El proyecto ya integra mapa interactivo, geolocalizacion, busqueda de aulas, navegacion por bloques y plantas, persistencia local y una experiencia preparada para web. Ademas, cuenta con pruebas base para la logica de rutas y con una estructura que permite ampliar edificios, aulas y funciones sin rehacer la aplicacion. Como siguientes pasos, el camino natural incluye mejorar analitica de uso, enriquecer las instrucciones de navegacion y continuar ampliando la cobertura de planos y servicios para la comunidad universitaria.
+
+Guion del expositor:
+El resultado mas importante es que ya existe una base funcional y extensible. No se trata de una maqueta aislada, sino de una aplicacion con flujo real, persistencia y componentes que pueden seguir creciendo. Desde el punto de vista tecnico, ya se validaron piezas criticas como la logica de distancia, formato e indicaciones de ruta. Desde el punto de vista de producto, la aplicacion puede evolucionar hacia mayor precision, mas cobertura de campus y una integracion aun mas fuerte con la vida academica.
+
+==================================================
+DIAPOSITIVA 10
+LAYOUT: CIERRE / PORTADA REUTILIZADA
+TIEMPO: 1 minuto + preguntas
+
+Texto en pantalla:
+Gracias
+Preguntas
+
+Subtitulo sugerido:
+Campus Map App - Flutter para resolver orientacion real en entornos universitarios
+
+Guion del expositor:
+Para cerrar, me gustaria dejar una idea principal: Flutter no solo sirve para construir interfaces bonitas, sino tambien para resolver problemas reales de contexto, movilidad y acceso a informacion. En este caso, la tecnologia nos permitio integrar ubicacion, mapas, datos estructurados y herramientas academicas en una experiencia unificada. Muchas gracias por su atencion. Quedo atento a sus preguntas.
+
+==================================================
+RECOMENDACION DE TIEMPO TOTAL
+
+Diapositiva 1: 1 minuto
+Diapositiva 2: 2 minutos
+Diapositiva 3: 2 minutos
+Diapositiva 4: 3 minutos
+Diapositiva 5: 3 minutos
+Diapositiva 6: 3 minutos
+Diapositiva 7: 2.5 minutos
+Diapositiva 8: 2.5 minutos
+Diapositiva 9: 2 minutos
+Diapositiva 10: 1 minuto
+
+Total estimado de exposicion: 22 minutos
+Espacio sugerido para preguntas: 3 minutos
+
+Si deseas un margen mas amplio para preguntas, reduce la demostracion en vivo y compacta las diapositivas 7 y 8 a 2 minutos cada una.
+
+==================================================
+NOTAS PRACTICAS PARA ARMAR EL PPT FINAL
+
+1. Conserva la portada del template como diapositiva inicial.
+2. Duplica los layouts de imagen, lista y texto continuo segun esta guia.
+3. En las diapositivas 5 y 6 utiliza capturas reales de la app; son las mas importantes visualmente.
+4. Si haras demo en vivo, prepara la aplicacion abierta en el mapa principal y con un aula facil de buscar.
+5. Si no haras demo, agrega una captura adicional del horario o favoritos en la diapositiva 7.
